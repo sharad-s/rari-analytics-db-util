@@ -36,6 +36,8 @@ const seedDB = async () => {
     const savePromises = tvls.map((tvl) => saveTVLObject(tvl));
     const saveTVLPromises = await Promise.allSettled(savePromises);
   }
+
+  console.log("Seeded 💦")
 };
 
 seedDB();

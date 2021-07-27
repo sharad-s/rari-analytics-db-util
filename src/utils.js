@@ -41,6 +41,11 @@ const fetchTVLDataFromAPI = async (blockNumber) =>
     `https://beta.rari.capital/api/fuse/tvl?blockNumber=${blockNumber}`
   );
 
+const fetchPoolUserBalanceDataFromAPI = async (userAddress, blockNumber) =>
+  await axios.get(
+    `https://beta.rari.capital/api/accounts/fuse/balances?address=${userAddress}=${blockNumber}`
+  );
+
 const getTVLForBlocks = async (blocks) => {
   const tvlPromises = await Promise.allSettled(
     blocks
@@ -55,6 +60,20 @@ const getTVLForBlocks = async (blocks) => {
   return tvls;
 };
 
+const getPoolUserBalanceForBlocks = async (userAddress, blocks) => {
+  const poolUserBalancePromises = await Promise.allSettled(
+    blocks
+      .map(({ block }) => block)
+      .map((blockNumber) => fetchPoolUserBalanceDataFromAPI(userAddress, blockNumber))
+  );
+
+  const poolUserBalances = poolUserBalancePromises.map(({ status, value }) => {
+    if (status === "fulfilled") return value.data;
+  });
+
+  return poolUserBalances;
+};
+
 const formatDDMMYYToTimestamp = (ddMMYY) => {
   const x = ddMMYY.split("-");
   return new Date([x[1], x[0], x[2]].join("/")).getTime() / 1000;
@@ -62,7 +81,9 @@ const formatDDMMYYToTimestamp = (ddMMYY) => {
 
 module.exports = {
   getTVLForBlocks,
+  getPoolUserBalanceForBlocks,
   fetchTVLDataFromAPI,
+  fetchPoolUserBalanceDataFromAPI,
   createBlockIntervals,
   formatDDMMYYToTimestamp,
 };
